@@ -1,0 +1,25 @@
+{
+    "name": "enc28j60-emac",
+    "config": {
+        "mosi": {
+            "macro_name": "ENC28J60_MOSI",
+            "help": "Pin name connected to ENC28J60 SPI mosi",
+            "value": "SPI_MOSI"
+        },
+        "miso": {
+            "macro_name": "ENC28J60_MISO",
+            "help": "Pin name connected to ENC28J60 SPI miso",
+            "value": "SPI_MISO"
+        },
+        "sck": {
+            "macro_name": "ENC28J60_SCK",
+            "help": "Pin name connected to ENC28J60 SPI sck",
+            "value": "SPI_SCK"
+        },
+        "cs": {
+            "macro_name": "ENC28J60_CS",
+            "help": "Pin name connected to ENC28J60 SPI cs",
+            "value": "SPI_CS"
+        }
+    }
+}
