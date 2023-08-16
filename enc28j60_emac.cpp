@@ -90,7 +90,6 @@ void ENC28J60_EMAC::receive_task()
     if (payload != NULL) {
         if (_emac_link_input_cb) {
             _emac_link_input_cb(payload);   // pass packet payload to the ethernet stack
-            _memory_manager->free(payload);
         }
     }
 
