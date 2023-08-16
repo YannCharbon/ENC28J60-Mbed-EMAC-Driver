@@ -130,20 +130,15 @@ void ENC28J60::init()
     // TX buffer end at end of ethernet buffer memory.
     writeRegPair(ETXNDL, ETXND_INI);
 
-    // However, he host controller should leave at least seven bytes between each
-    // packet and the beginning of the receive buffer.
-    // do bank 1 stuff, packet filter:
-    // For broadcast packets we allow only ARP packtets
-    // All other packets should be unicast only for our mac (MAADR)
-    //
-    // The pattern to match is therefore
-    // Type     ETH.DST
-    // ARP      BROADCAST
-    // 06 08 -- ff ff ff ff ff ff -> ip checksum for theses bytes=f7f9
-    // in binary these poitions are:11 0000 0011 1111
-    // This is hex 303F->EPMM0=0x3f,EPMM1=0x30
-    //TODO define specific pattern to receive dhcp-broadcast packages instead of setting ERFCON_BCEN!
-    writeReg(ERXFCON, ERXFCON_UCEN | ERXFCON_CRCEN | ERXFCON_PMEN | ERXFCON_BCEN);
+
+    // We want the Ethernet transceiver to forward every packets that are received
+    // to the stack. This is needed if the Mbed firmware runs a router-like code
+    // such as Wi-SUN border-router. In this situation, packets that have a destination
+    // MAC address that is different from the ENC28J60 MAC address may arrive on it. We
+    // don't want them to be filtered out as these may be formwared to other nodes
+    // within the network.
+    //writeReg(ERXFCON, ERXFCON_UCEN | ERXFCON_CRCEN | ERXFCON_PMEN | ERXFCON_BCEN | ERXFCON_MCEN);
+    writeReg(ERXFCON, 0);
     writeRegPair(EPMM0, 0x303f);
     writeRegPair(EPMCSL, 0xf7f9);
 
