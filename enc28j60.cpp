@@ -63,14 +63,14 @@
  * @param
  * @retval
  */
-ENC28J60::ENC28J60(PinName mosi, PinName miso, PinName sclk, PinName cs) :
+ENC28J60::ENC28J60(PinName mosi, PinName miso, PinName sclk, PinName cs, uint32_t spi_frequency) :
     _spi(new SPI(mosi, miso, sclk)),
     _cs(cs),
     _bank(0),
     _ready(true),
     _next(ERXST_INI)
 {
-    init();
+    init(spi_frequency);
 }
 
 /**
@@ -79,14 +79,14 @@ ENC28J60::ENC28J60(PinName mosi, PinName miso, PinName sclk, PinName cs) :
  * @param
  * @retval
  */
-ENC28J60::ENC28J60(mbed::SPI* spi, PinName cs) :
+ENC28J60::ENC28J60(mbed::SPI* spi, PinName cs, uint32_t spi_frequency) :
     _spi(spi),
     _cs(cs),
     _bank(0),
     _ready(true),
     _next(ERXST_INI)
 {
-    init();
+    init(spi_frequency);
 }
 
 /**
@@ -95,12 +95,12 @@ ENC28J60::ENC28J60(mbed::SPI* spi, PinName cs) :
  * @param
  * @retval
  */
-void ENC28J60::init()
+void ENC28J60::init(uint32_t spi_frequency)
 {
     // Initialize SPI interface
     _cs = 1;
     _spi->format(8, 0);         // 8bit, mode 0
-    _spi->frequency(20000000);  // 20MHz
+    _spi->frequency(spi_frequency);
 
     // Wait SPI to become stable
     ThisThread::sleep_for(RESET_TIME_OUT_MS);

@@ -29,7 +29,7 @@
  * @retval
  */
 ENC28J60_EMAC::ENC28J60_EMAC() :
-    _enc28j60(new ENC28J60(ENC28J60_MOSI, ENC28J60_MISO, ENC28J60_SCK, ENC28J60_CS)),
+    _enc28j60(new ENC28J60(ENC28J60_MOSI, ENC28J60_MISO, ENC28J60_SCK, ENC28J60_CS, ENC28J60_SPI_FREQ)),
     _prev_link_status_up(PHY_STATE_LINK_DOWN),
     _link_status_task_handle(0),
     _receive_task_handle(0),

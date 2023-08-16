@@ -20,6 +20,11 @@
             "macro_name": "ENC28J60_CS",
             "help": "Pin name connected to ENC28J60 SPI cs",
             "value": "SPI_CS"
+        },
+        "spi-freq": {
+            "macro_name": "ENC28J60_SPI_FREQ",
+            "help": "SPI frequency (by default 1 MB/s)",
+            "value": 8000000
         }
     }
 }

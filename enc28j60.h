@@ -79,9 +79,9 @@ typedef enum
 class   ENC28J60
 {
 public:
-    ENC28J60(PinName mosi, PinName miso, PinName sclk, PinName cs);
+    ENC28J60(PinName mosi, PinName miso, PinName sclk, PinName cs, uint32_t spi_frequency);
 
-    ENC28J60(mbed::SPI * spi, PinName cs);
+    ENC28J60(mbed::SPI * spi, PinName cs, uint32_t spi_frequency);
 
     /**
      * \brief Initializes ENC28J60 Ethernet controller to a known default state:
@@ -95,7 +95,7 @@ public:
      *
      * \return error code /ref enc28j60_error_t
      */
-    void                init(void);
+    void                init(uint32_t spi_frequency);
 
     /** This returns a unique 6-byte MAC address, based on the device UID
     *  This function overrides hal/common/mbed_interface.c function
