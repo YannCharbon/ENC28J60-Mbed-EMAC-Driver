@@ -114,6 +114,12 @@ void ENC28J60::init(uint32_t spi_frequency)
     // Workaround: Just wait.
     ThisThread::sleep_for(RESET_TIME_OUT_MS);
 
+#if ENC28J60_EVENT_HANDLING == ENC28J60_EVENT_HANDLING_IRQ
+    // Initialize interruptions
+    init_irqs();
+    printf("ENC28J60 Interrupt inited\n");
+#endif
+
     // Set pointers to receive buffer boundaries
     writeRegPair(ERXSTL, ERXST_INI);
     writeRegPair(ERXNDL, ERXND_INI);
@@ -755,6 +761,49 @@ void ENC28J60::writeOp(uint8_t op, uint8_t address, uint8_t data)
 
     _write(op | (address & ADDR_MASK), &data, 1, false);
 }
+
+#if ENC28J60_EVENT_HANDLING == ENC28J60_EVENT_HANDLING_IRQ
+void ENC28J60::init_irqs(void) {
+    disable_all_interrupts();
+    clear_all_interrupts();
+
+    enable_interrupt(ENC28J60_INTERRUPT_RX_PENDING_ENABLE);
+    //enable_interrupt(ENC28J60_INTERRUPT_LINK_STATE_ENABLE);
+    //phyWrite(PHIE, PHIE_PLNKIE | PHIE_PGEIE);
+    enable_interrupt(ENC28J60_INTERRUPT_TX_ENABLE);
+    enable_interrupt(ENC28J60_INTERRUPT_TX_ERROR_ENABLE);
+    enable_interrupt(ENC28J60_INTERRUPT_RX_ERROR_ENABLE);
+
+}
+
+void ENC28J60::enable_interrupt(enc28j60_interrupt_source source) {
+	writeOp(ENC28J60_BIT_FIELD_SET, EIE, source);
+}
+
+void ENC28J60::disable_interrupt(enc28j60_interrupt_source source) {
+	writeOp(ENC28J60_BIT_FIELD_CLR, EIE, source);
+}
+
+void ENC28J60::disable_all_interrupts(void) {
+	writeReg(EIE, 0x00);
+}
+
+void ENC28J60::clear_interrupt(enc28j60_interrupt_source source) {
+	writeOp(ENC28J60_BIT_FIELD_CLR, EIR, source);
+}
+
+void ENC28J60::clear_all_interrupts(void) {
+    writeReg(EIR, 0x00);
+}
+
+uint8_t ENC28J60::get_interrupts(void) {
+	return readOp(ENC28J60_READ_CTRL_REG, EIR);
+}
+
+bool ENC28J60::get_interrupt(enc28j60_interrupt_source source) {
+    return (get_interrupts()&source)>0 ? true : false;
+}
+#endif
 
 /**
  * @brief

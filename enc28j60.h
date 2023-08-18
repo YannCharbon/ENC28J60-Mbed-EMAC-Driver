@@ -213,6 +213,61 @@ public:
     bool                linkStatus(void);
     uint8_t             readOp(uint8_t op, uint8_t address);
     void                writeOp(uint8_t op, uint8_t address, uint8_t data);
+#if ENC28J60_EVENT_HANDLING == ENC28J60_EVENT_HANDLING_IRQ
+	/**
+	 * \brief Initialise irqs by clearing and disabling all interrupt sources
+	 *        and enable interrupts. Since all interrupt sources are disabled,
+	 *        interrupt won't be triggered, until interrupt sources won't be
+	 *        enabled by \ref enc28j60_enable_interrupt
+	 */
+	void init_irqs(void);
+
+    /**
+	 * \brief Enable the given interrupt source.
+	 *
+	 * \param[in] source Enum of the interrupt source.
+	 */
+	void enable_interrupt(enc28j60_interrupt_source source);
+
+	/**
+	 * \brief Disable the given interrupt source.
+	 *
+	 * \param[in] source Enum of the interrupt source.
+	 */
+	void disable_interrupt(enc28j60_interrupt_source source);
+
+	/**
+	 * \brief Disable all of the interrupt sources.
+	 */
+	void disable_all_interrupts(void);
+
+	/**
+	 * \brief Clear the given interrupt source.
+	 *
+	 * \param[in] source Enum of the interrupt source.
+	 */
+	void clear_interrupt(enc28j60_interrupt_source source);
+
+	/**
+	 * \brief Clear all of the interrupt sources.
+	 */
+	void clear_all_interrupts(void);
+
+	/**
+	 * \brief Get the status of all interrupt sources.
+	 *
+	 * \return non-zero if the given interrupt source is triggered, zero otherwise
+	 */
+	uint8_t get_interrupts(void);
+	/**
+	 * \brief Get the status of the given interrupt source.
+	 *
+	 * \param[in] source Enum of the interrupt source.
+	 *
+	 * \return non-zero if the given interrupt source is triggered, zero otherwise
+	 */
+	bool get_interrupt(enc28j60_interrupt_source source);
+#endif
 private:
     void        _setBank(uint8_t address);
     void        _read(uint8_t cmd, uint8_t* buf, uint16_t len, bool blocking);

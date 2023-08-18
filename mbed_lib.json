@@ -21,10 +21,20 @@
             "help": "Pin name connected to ENC28J60 SPI cs",
             "value": "SPI_CS"
         },
+        "int": {
+            "macro_name": "ENC28J60_INT",
+            "help": "Pin name connected to ENC28J60 INT pin",
+            "value": "INT"
+        },
         "spi-freq": {
             "macro_name": "ENC28J60_SPI_FREQ",
             "help": "SPI frequency (by default 1 MB/s)",
             "value": 8000000
+        },
+        "event-handling": {
+            "macro_name": "ENC28J60_EVENT_HANDLING",
+            "help": "ENC28J60_EVENT_HANDLING_TIMER for event polling or ENC28J60_EVENT_HANDLING_IRQ for interrupt triggering",
+            "value": "ENC28J60_EVENT_HANDLING_TIMER"
         }
     }
 }

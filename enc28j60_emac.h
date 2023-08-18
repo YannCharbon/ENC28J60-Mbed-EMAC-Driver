@@ -36,6 +36,10 @@ class ENC28J60_EMAC :
 public:
     ENC28J60_EMAC();
 
+#if ENC28J60_EVENT_HANDLING == ENC28J60_EVENT_HANDLING_IRQ
+    void Interrupt_Handler(void);
+#endif
+
     /** Return the ENC28J60 EMAC
      *
      * Returns the default on-board EMAC - this will be target-specific, and
@@ -168,14 +172,25 @@ public:
     virtual void            set_memory_manager(EMACMemoryManager& mem_mngr);
 private:
     void                        link_status_task();
+#if ENC28J60_EVENT_HANDLING == ENC28J60_EVENT_HANDLING_TIMER
     void                        receive_task();
+#else
+    static void                 receiver_thread_function(void* params);
+    static void                 interrupt_thread_function(void* params);
+#endif
     bool                        low_level_init_successful();
     emac_mem_buf_t*             low_level_input();
 
     ENC28J60*                   _enc28j60;
     bool                        _prev_link_status_up;
+#if ENC28J60_EVENT_HANDLING == ENC28J60_EVENT_HANDLING_TIMER
     int                         _link_status_task_handle;
     int                         _receive_task_handle;
+#else
+    rtos::Thread *              _irq_thread;
+    rtos::Thread *              _rx_thread;
+    mbed::InterruptIn           _int;
+#endif
     EMACMemoryManager*          _memory_manager;
     Mutex                       _ethLockMutex;
     uint8_t                     _hwaddr[ENC28J60_HWADDR_SIZE];

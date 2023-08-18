@@ -28,9 +28,18 @@
 
 /** \brief Defines for receiver thread */
 #define LINK_STATUS_TASK_PERIOD_MS           200ms
-#define RECEIVE_TASK_PERIOD_MS               20ms
+#define RECEIVE_TASK_PERIOD_MS               10ms
 #define PHY_STATE_LINK_DOWN                  false
 #define PHY_STATE_LINK_UP                    true
 #define CRC_LENGTH_BYTES                     4U
+#define FLAG_RX                              1U
+#define RX_THREAD_PRIORITY          		 (osPriorityNormal)
+#define RX_THREAD_STACKSIZE         		 2048U
+#define FLAG_IRQ                             2U
+#define IRQ_THREAD_PRIORITY          		 (osPriorityISR)
+#define IRQ_THREAD_STACKSIZE         		 2048U
+
+#define ENC28J60_EVENT_HANDLING_TIMER        0
+#define ENC28J60_EVENT_HANDLING_IRQ          1
 
 #endif /* ENC28J60_EMAC_CONFIG_H_ */
