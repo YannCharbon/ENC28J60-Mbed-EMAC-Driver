@@ -314,6 +314,11 @@ enc28j60_error_t ENC28J60::loadPacketInTxBuffer(packet_t* packet)
         return error;
     }
 
+    // Reset TX logic
+    writeOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRST);
+    writeOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRST);
+    writeOp(ENC28J60_BIT_FIELD_CLR, EIR, EIR_TXERIF | EIR_TXIF);
+
     setWritePrt(ETXST_INI, 0);
 
     //_tx_packet.payload.len = data_len;
@@ -485,13 +490,22 @@ enc28j60_error_t ENC28J60::transmitPacket(packet_t* packet)
     writeOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
 
     // Wait until transmission is completed
-    while ((readReg(ECON1) & ECON1_TXRTS) != 0) { }
+    //while (((readReg(ECON1) & ECON1_TXRTS) != 0) && (!_tx_error_occured)) { }
 
-    // Chek whether the transmission was successfull
-    if ((readReg(ESTAT) & ESTAT_TXABRT) == 0)
+    uint16_t count = 0;
+    while ((readReg(EIR) & (EIR_TXIF | EIR_TXERIF)) == 0 && ++count < 1000U);
+
+    if (!(readReg(EIR) & EIR_TXERIF) && count < 1000U) {
         return ENC28J60_ERROR_OK;
-    else
-        return ENC28J60_ERROR_NEXTPACKET;
+    }
+
+    return ENC28J60_ERROR_NEXTPACKET;
+
+    //// Chek whether the transmission was successfull
+    //if ((readReg(ESTAT) & ESTAT_TXABRT) == 0)
+    //    return ENC28J60_ERROR_OK;
+    //else
+    //    return ENC28J60_ERROR_NEXTPACKET;
 }
 
 
@@ -770,10 +784,9 @@ void ENC28J60::init_irqs(void) {
     enable_interrupt(ENC28J60_INTERRUPT_RX_PENDING_ENABLE);
     //enable_interrupt(ENC28J60_INTERRUPT_LINK_STATE_ENABLE);
     //phyWrite(PHIE, PHIE_PLNKIE | PHIE_PGEIE);
-    enable_interrupt(ENC28J60_INTERRUPT_TX_ENABLE);
-    enable_interrupt(ENC28J60_INTERRUPT_TX_ERROR_ENABLE);
+    //enable_interrupt(ENC28J60_INTERRUPT_TX_ENABLE);
+    //enable_interrupt(ENC28J60_INTERRUPT_TX_ERROR_ENABLE);
     enable_interrupt(ENC28J60_INTERRUPT_RX_ERROR_ENABLE);
-
 }
 
 void ENC28J60::enable_interrupt(enc28j60_interrupt_source source) {
@@ -804,6 +817,19 @@ bool ENC28J60::get_interrupt(enc28j60_interrupt_source source) {
     return (get_interrupts()&source)>0 ? true : false;
 }
 #endif
+
+/**
+ * @brief Reset the RX components
+*/
+void ENC28J60::reset_rx_logic() {
+    writeOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_RXEN);
+    writeOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXRST);
+    writeOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_RXRST);
+    writeRegPair(ERXSTL, ERXST_INI);
+    writeRegPair(ERXNDL, ERXND_INI);
+    writeOp(ENC28J60_BIT_FIELD_CLR, ECON1, EIR_RXERIF);
+    writeOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
+}
 
 /**
  * @brief

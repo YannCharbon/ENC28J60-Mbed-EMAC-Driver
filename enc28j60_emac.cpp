@@ -111,6 +111,7 @@ void ENC28J60_EMAC::receive_task()
         payload = low_level_input();
         if (payload != NULL) {
             if (_emac_link_input_cb) {
+                //printf("ETH packet input\n");
                 _emac_link_input_cb(payload);   // pass packet payload to the ethernet stack
             }
         }
@@ -142,6 +143,7 @@ void ENC28J60_EMAC::receiver_thread_function(void* params) {
                 if (payload != NULL) {
                     if (enc28j60_enet->_emac_link_input_cb) {
                         enc28j60_enet->_emac_link_input_cb(payload);   // pass packet payload to the ethernet stack
+                        //printf("ETH packet input\n");
                     }
                 }
                 enc28j60_enet->_enc28j60->freeRxBuffer();  // make room in ENC28J60 receive buffer for new packets
@@ -190,22 +192,23 @@ void ENC28J60_EMAC::interrupt_thread_function(void* params) {
                     //break;
                 }
                 else if ((eir & 0x08) > 0){
-                    enc28j60_enet->_enc28j60->clear_interrupt(ENC28J60_INTERRUPT_TX_ENABLE);
-                    //printf("ENC28J60_INTERRUPT_TX_ENABLE\n");
-                    enc28j60_enet->_enc28j60->enable_interrupt(ENC28J60_INTERRUPT_ENABLE);
+                    //enc28j60_enet->_enc28j60->clear_interrupt(ENC28J60_INTERRUPT_TX_ENABLE);
+                    ////printf("ENC28J60_INTERRUPT_TX_ENABLE\n");
+                    //enc28j60_enet->_enc28j60->enable_interrupt(ENC28J60_INTERRUPT_ENABLE);
                     //break;
                 }
                 else if ((eir & 0x02) > 0){
-                    enc28j60_enet->_enc28j60->clear_interrupt(ENC28J60_INTERRUPT_TX_ERROR_ENABLE);
-                    //printf("ENC28J60_INTERRUPT_TX_ERROR_ENABLE\n");
-                    enc28j60_enet->_enc28j60->enable_interrupt(ENC28J60_INTERRUPT_ENABLE);
+                    //enc28j60_enet->_enc28j60->clear_interrupt(ENC28J60_INTERRUPT_TX_ERROR_ENABLE);
+                    //printf("ENC28J60: TX error\n");
+                    //enc28j60_enet->_enc28j60->enable_interrupt(ENC28J60_INTERRUPT_ENABLE);
                     //break;
                 }
                 else if ((eir & 0x01) > 0){
                     enc28j60_enet->_enc28j60->clear_interrupt(ENC28J60_INTERRUPT_RX_ERROR_ENABLE);
-                    //printf("ENC28J60_INTERRUPT_RX_ERROR_ENABLE\n");
-                    enc28j60_enet->_enc28j60->enable_interrupt(ENC28J60_INTERRUPT_ENABLE);
+                    printf("ENC28J60: RX error\n");
                     enc28j60_enet->_enc28j60->freeRxBuffer();
+                    enc28j60_enet->_enc28j60->reset_rx_logic();
+                    enc28j60_enet->_enc28j60->enable_interrupt(ENC28J60_INTERRUPT_ENABLE);
                     //break;
                 }
                 else {
@@ -236,6 +239,8 @@ bool ENC28J60_EMAC::link_out(emac_mem_buf_t* buf)
         return false;
     }
 
+    //printf("ENC28J60_EMAC::link_out entry\n");
+
     _ethLockMutex.lock();
     // Iterate through the buffer chain and fill the packet with payload.
     while (buf != NULL) {
@@ -245,6 +250,7 @@ bool ENC28J60_EMAC::link_out(emac_mem_buf_t* buf)
         if (error != ENC28J60_ERROR_OK) {
             _memory_manager->free(chain);
             _ethLockMutex.unlock();
+            printf("ETH packet could not be loaded in TX buffer\n");
             return false;
         }
 
@@ -252,8 +258,11 @@ bool ENC28J60_EMAC::link_out(emac_mem_buf_t* buf)
         if (error != ENC28J60_ERROR_OK) {
             _memory_manager->free(chain);
             _ethLockMutex.unlock();
+            printf("ETH packet output faillure\n");
             return false;
         }
+
+        //printf("ETH packet output success\n");
 
         buf = _memory_manager->get_next(buf);
     }
@@ -285,6 +294,7 @@ void ENC28J60_EMAC::link_status_task()
     /* Compare with previous state */
     if (current_link_status_up != _prev_link_status_up) {
         if (_emac_link_state_cb) {
+            printf("ETH link %s\n", (current_link_status_up ? "UP" : "DOWN"));
             _emac_link_state_cb(current_link_status_up);
         }
 

@@ -268,6 +268,7 @@ public:
 	 */
 	bool get_interrupt(enc28j60_interrupt_source source);
 #endif
+    void reset_rx_logic();
 private:
     void        _setBank(uint8_t address);
     void        _read(uint8_t cmd, uint8_t* buf, uint16_t len, bool blocking);
